@@ -1,0 +1,202 @@
+from tkinter import*
+import random
+import time
+
+class Soru:
+    toplam_çözülen_soru_sayısı = 0
+    çözülen_soru_sayısı = 0 
+    doğru_cevap_sayısı = 0
+    yanlış_cevap_sayısı = 0
+    def __init__(self , ekran , işlem , max_değer ):
+        self.işlem = işlem #işlem 1 ise çıkrtma , 0 ise toplama yapılacak
+        self.max_değer = max_değer
+        self.sayı_1 = 0
+        self.sayı_2 = 0
+        self.sonuç = 0
+        self.soru_texti = ""
+        self.soru_yazısı = Label(ekran , text = self.soru_texti ,
+                                 font = ("Arial 40 bold") , textvariable = soru_label_değişkeni , bg = "#836596" )
+        self.soru_yazısı.grid(row = 0  , column = 0 , columnspan = 4 , padx = 10 , pady = 10)        
+    def yeni_soru_yaz(self):
+        self.sayı_1 = random.randint(1 , self.max_değer )
+        self.sayı_2 = random.randint(1 , (self.max_değer-self.sayı_1+2))
+        self.işlem = işlem_rdbtn_değişkeni.get()
+        if self.işlem == 2:
+            self.işlem = random.randint(0,1)
+            print("soru işlemi karışık")
+        if self.işlem == 0:
+            self.soru_texti = (str(self.sayı_1) + " + " + str(self.sayı_2) + " = ?" )
+            self.sonuç = self.sayı_1 + self.sayı_2
+            print("soru işlemi toplama")
+        if self.işlem == 1:
+            if self.sayı_1 < self.sayı_2:
+                self.sayı_1 , self.sayı_2 = self.sayı_2 , self.sayı_1
+            self.soru_texti = (str(self.sayı_1) + " - " + str(self.sayı_2) + " = ?" )
+            self.sonuç = self.sayı_1 - self.sayı_2
+            print("soru işlemi çıkarma")
+        soru_label_değişkeni.set(self.soru_texti)
+
+class Tuş:
+    tuşlar_dizisi = []
+    def __init__(self , ekran , cevap ,sat ,süt):
+        self.ekran = ekran   
+        self.cevap = False
+        self.tuş = Button(self.ekran , text = "", font = ("Arial 40 bold") ,
+                          bg ="#3a9136" , command = self.tuş_bak , height = 1  ,width = 3)
+        self.tuş.grid(row = sat , column = süt , padx = 10 , pady = 10)
+        Tuş.tuşlar_dizisi.append(self)
+    def tuş_bak(self):
+        toplam_soru_değişkeni.set("TOPLAM: " + str(Soru.toplam_çözülen_soru_sayısı))
+        if self.cevap :
+            print("DOĞRU CEVAP")
+            Soru.doğru_cevap_sayısı += 1
+            doğru_cevap_değişkeni.set("DOĞRU: " + str(Soru.doğru_cevap_sayısı))
+            durum_bilgisi_değişkeni.set("DOĞRU")
+            durum_bilgisi.etiket.config(bg = "green"  , relief = GROOVE)
+            durum_bilgisi.etiket.after(1000 , durum_bilgisi.bilgi_label_pasif_yap)        
+            Soru.çözülen_soru_sayısı += 1
+            if Soru.çözülen_soru_sayısı>5 and Soru.çözülen_soru_sayısı<10:
+                soru_1.max_değer = 15
+            if Soru.çözülen_soru_sayısı>10 and Soru.çözülen_soru_sayısı<20:
+                soru_1.max_değer = 20
+            if Soru.çözülen_soru_sayısı>20 and Soru.çözülen_soru_sayısı<30:
+                soru_1.max_değer = 30
+            print("soru 1 max değer:" , soru_1.max_değer)
+            soru_1.yeni_soru_yaz()
+            Tuş.cevapları_oluştur()            
+        else:
+            Soru.yanlış_cevap_sayısı += 1
+            yanlış_cevap_değişkeni.set("YANLIŞ: " + str(Soru.yanlış_cevap_sayısı))
+            durum_bilgisi_değişkeni.set("YANLIŞ")
+            durum_bilgisi.etiket.config(bg = "red" , relief = GROOVE)
+            durum_bilgisi.etiket.after(1000 , durum_bilgisi.bilgi_label_pasif_yap)        
+            print("YANLIŞ CEVAP !")            
+        
+    @ classmethod     
+    def ilk_tuşları_diz(cls):
+        for i in range (0,4):            
+            tuş = Tuş(üst_çerçeve , 0 , 2 , i)        
+    @classmethod
+    def cevapları_oluştur(cls):
+        Soru.toplam_çözülen_soru_sayısı += 1
+        doğru_cevap_değişkeni = Soru.toplam_çözülen_soru_sayısı
+        rastgele_cevap_dizisi = []
+        cevaplar_dizisi = []
+        dizi = []
+        cevaplar_dizisi.clear()
+        cevaplar_dizisi.append(soru_1.sonuç)
+        for  i in range((soru_1.sonuç - 7) , (soru_1.sonuç + 7)):
+            if i >= 0 and i!= soru_1.sonuç:      
+                dizi.append(i)
+        dizi = random.sample(dizi , 3)
+        cevaplar_dizisi = (cevaplar_dizisi + dizi)
+        random.shuffle(cevaplar_dizisi)
+        print(cevaplar_dizisi)
+        print(dizi)
+        print(soru_1.sonuç)
+        for  i in range (0,4):
+            Tuş.tuşlar_dizisi[i].tuş.config(text = cevaplar_dizisi[i])
+            if cevaplar_dizisi[i] == soru_1.sonuç:
+                Tuş.tuşlar_dizisi[i].cevap = True
+            else:
+                Tuş.tuşlar_dizisi[i].cevap = False
+        oyun_ekranı.update()
+
+class Bilgi_Label:
+    def __init__(self , ekran , değişken):
+        self.ekran = ekran
+        self.text_değişkeni = değişken
+        self.etiket = Label(self.ekran , text = "" , font = ("Arial 20 bold") , bg = üst_çerçeve_bg,                           
+                         textvariable = self.text_değişkeni , relief = GROOVE)
+        self.etiket.grid(row = 1 , column = 1 , columnspan = 2 , padx = 10 , pady = 10 , ipadx = 5 , ipady= 5)        
+    def bilgi_label_pasif_yap(self):
+        durum_bilgisi_değişkeni.set("")
+        self.etiket.config(bg = üst_çerçeve_bg , relief = FLAT)
+                           
+def yeni_soru_yaz():
+    soru_1.yeni_soru_yaz()
+    Tuş.cevapları_oluştur()
+
+def sonraki_soru():
+    Soru.toplam_çözülen_soru_sayısı -= 1
+    soru_1.yeni_soru_yaz()
+    Tuş.cevapları_oluştur()    
+    
+def rdbtn_bak():
+    soru_1.max_değer = 10
+    Soru.çözülen_soru_sayısı = 0
+    yeni_soru_yaz()
+    print("soru 1 max değer: " , soru_1.max_değer )
+    print("rd btn değişken değeri: " , işlem_rdbtn_değişkeni.get())
+    
+"""
+703052
+836596 üst çerçeveçbg
+"""
+
+if __name__ == "__main__":
+
+    üst_çerçeve_bg = "#9e0d88"
+    oyun_ekranı_bg = "#0c379c"
+    şık_arkaları_bg = "#d7e024"
+    ilk_çalıştırma = True
+    büyük_yazı_fontu = ("Arial 40 bold")
+    küçük_yazı_fontu = ("Arial 20 bold")
+    oyun_ekranı = Tk()
+    oyun_ekranı.geometry("570x620+200+20")
+    oyun_ekranı.resizable(0,0)
+    oyun_ekranı.config(bg = oyun_ekranı_bg)
+   
+    
+    soru_label_değişkeni = StringVar(oyun_ekranı , "")
+    durum_bilgisi_değişkeni = StringVar(oyun_ekranı , "")
+    işlem_rdbtn_değişkeni = IntVar(oyun_ekranı , 0)
+    toplam_soru_değişkeni = StringVar(oyun_ekranı , "TOPLAM: 0")
+    doğru_cevap_değişkeni = StringVar(oyun_ekranı , "DOĞRU: 0")
+    yanlış_cevap_değişkeni = StringVar(oyun_ekranı , "YANLIŞ: 0")
+    
+    üst_çerçeve = Frame(oyun_ekranı , relief = SUNKEN , bg = üst_çerçeve_bg , bd =4)
+    üst_çerçeve.grid(row = 0 , column = 0 , padx =10 , pady =20 )
+    if ilk_çalıştırma:
+       soru_1 = Soru(üst_çerçeve , 1 , 10 )
+       soru_1.yeni_soru_yaz()
+       durum_bilgisi = Bilgi_Label(üst_çerçeve , durum_bilgisi_değişkeni)
+       Tuş.ilk_tuşları_diz()       
+       ilk_çalıştırma = False
+       yeni_soru_yaz()
+   
+    alt_çerçeve = Frame(oyun_ekranı , bd = 3 , relief = SUNKEN , bg="#82566d" )
+    alt_çerçeve.grid(row = 3  , column = 0 , columnspan = 4 , padx = 5 , pady = 40)
+    alt_sol_çerçeve = Frame (alt_çerçeve , relief = SUNKEN , bg="#82566d")
+    alt_sol_çerçeve.grid(row =0 , column =0 , rowspan=2)    
+    toplama_rdbtn = Radiobutton(alt_sol_çerçeve , text = "TOPLAMA" ,font = küçük_yazı_fontu, bg="#82566d",
+                                value = 0 , variable = işlem_rdbtn_değişkeni , command = sonraki_soru )
+    toplama_rdbtn.grid(row=0 , column =0 ,padx = 10 , pady = 10 , sticky = "W" )
+    çıkarma_rdbtn = Radiobutton(alt_sol_çerçeve , text = "ÇIKARMA" ,font = küçük_yazı_fontu, bg="#82566d",
+                                value = 1 , variable = işlem_rdbtn_değişkeni, command = sonraki_soru)
+    çıkarma_rdbtn.grid(row=1 , column =0 ,padx = 10 , pady = 10 , sticky = "W")
+    toplama_çıkarma_rdbtn = Radiobutton(alt_sol_çerçeve , text = "TOPLAMA\nÇIKARMA" , font = küçük_yazı_fontu, bg="#82566d",
+                                value = 2 , variable = işlem_rdbtn_değişkeni, command = sonraki_soru)
+    toplama_çıkarma_rdbtn.grid(row=2 , column =0 ,padx = 10 , pady = 10 , sticky = "W")
+    sonraki_soru_tuşu = Button(alt_çerçeve , text = "SONRAKİ\nSORU" ,font = küçük_yazı_fontu,
+                               bg="#6f5e7a",  command = sonraki_soru)
+    sonraki_soru_tuşu.grid(row = 0 , column = 1  , padx = 10 , pady = 10)
+    çıkış_tuşu = Button(alt_çerçeve , text = "OYUNDAN\nÇIK" ,font = küçük_yazı_fontu,
+                               bg="#6f5e7a",  command = oyun_ekranı.destroy)
+    çıkış_tuşu.grid(row = 1 , column = 1  , padx = 10 , pady = 10)
+    
+    alt_sağ_çerçeve = Frame (alt_çerçeve , relief = SUNKEN , bg="#82566d")
+    alt_sağ_çerçeve.grid(row =0 , column =2 , rowspan=2)    
+    toplam_soru_label = Label(alt_sağ_çerçeve , font = küçük_yazı_fontu
+                              ,bg="#6f5e7a" , textvariable = toplam_soru_değişkeni)
+    toplam_soru_label.grid(row = 0 , column = 2  , padx =10  , pady = 20)
+    doğru_sayısı_label = Label(alt_sağ_çerçeve ,font = küçük_yazı_fontu,
+                               bg="#6f5e7a" , textvariable = doğru_cevap_değişkeni)
+    doğru_sayısı_label.grid(row = 1 , column = 2  , padx = 10 , pady = 20)
+    yanlış_sayısı_label = Label(alt_sağ_çerçeve  ,font = küçük_yazı_fontu,
+                                bg="#6f5e7a" , textvariable = yanlış_cevap_değişkeni)
+    yanlış_sayısı_label.grid(row = 2 , column = 2  , padx = 10 , pady = 20)
+    
+    oyun_ekranı.mainloop()
+        
+        
