@@ -1,0 +1,133 @@
+from tkinter import*
+import random
+import time
+import winsound 
+
+class Tuş:    
+    tuşlar_dizisi = []
+    boş_tuşlar_dizisi = []
+    oyun_devam = True
+    oyun_ilk_çalışma = True
+    O_skoru = 0
+    X_skoru = 0
+        
+    def __init__(self , ekran , sat , süt):
+        self.sat = sat
+        self.süt = süt
+        self.durum = 0 # 0 ise boş      1 ise X       2 ise O
+        self.tuş = Button(ekran , text = "" , font = ("ArialBlack 41 bold") , command = self.x_yaz ,
+                          height =1 , width = 2 , bg = "#324f3e")
+        self.tuş.grid(row = sat , column =süt , padx = 10 , pady = 10)
+        Tuş.tuşlar_dizisi.append(self)   
+        
+    def x_yaz(self):# örneklerin fonksiyonu        
+        if self.durum == 0:
+            Tuş.oyun_devam = True
+            self.durum = 1
+            self.tuş.config(text = "X" , fg="#357dbd")            
+            oyun_ekranı.update()#burayı yazmazsak ekran geç güncelleniyor oyun akıcılığı bozuluyor(ekran anında güncelleniyor)
+            Tuş.X_test_et()
+            if Tuş.oyun_devam == True:
+                Tuş.o_yaz()#kullanıcı tuşa bastıktan sonra boştaki bir kutucuğa O yazılıyor
+                
+    @ classmethod
+    def o_yaz(cls):
+        Tuş.boş_tuşlar_dizisi.clear()#dizinin tüm içerğini sil
+        for indis in range(0 , len(Tuş.tuşlar_dizisi)):#boştaki tüm tuşları boş_tuşlar dizisine ekle
+            if (Tuş.tuşlar_dizisi[indis].durum == 0):
+                Tuş.boş_tuşlar_dizisi.append(Tuş.tuşlar_dizisi[indis])
+        if  len(Tuş.boş_tuşlar_dizisi) >0 :                
+            seçilen_o_tuşu = random.choice(Tuş.boş_tuşlar_dizisi)#boş tuşlardan rastgele birini seç ve üzerine O yaz
+            seçilen_o_tuşu.tuş.config(text = "O" , fg="#a84c38")            
+            seçilen_o_tuşu.durum = 2
+            oyun_ekranı.update()
+            Tuş.O_test_et()
+        else:            
+            durum_bilgisi_değişkeni.set("BERABERE BİTTİ !")
+            oyun_ekranı.update()
+            time.sleep(2)
+            Tuş.oyun_başlat()            
+
+    @ classmethod
+    def oyun_başlat(cls):
+        Tuş.boş_tuşlar_dizisi.clear()
+        if Tuş.oyun_ilk_çalışma == True :# oyunun ilk çalıştırılması ile tuşlar örnekleniyor
+            Tuş.tuşlar_dizisi.clear()
+            for i in range (0,3):
+                for j in range (0,3):
+                    yeni_tuş = Tuş(oyun_ekranı , i , j)
+            Tuş.oyun_ilk_çalışma = False               
+        else:
+            for i in range (0 , len(Tuş.tuşlar_dizisi)):#oyunun sonraki çalıştırmalarında tuşların durumu 0 yapılıyor
+                #ve yazıları siliniyor
+                Tuş.tuşlar_dizisi[i].durum = 0
+                Tuş.tuşlar_dizisi[i].tuş.config(text = "")
+        durum_bilgisi_değişkeni.set("OYUN BAŞLADI !")
+        oyun_ekranı.update()        
+
+    @classmethod
+    def X_test_et(cls):
+        # tüm kazandıran olasılıkları bir diziye atadım ve döngü ile bu olasılıkları test ediyorum
+        kazananlar = [[0,3,6] , [1,4,7] , [2,5,8] , [0,1,2] , [3,4,5] , [6,7,8] , [0,4,8] , [2,4,6]]
+        for i in range (0,len(kazananlar)):
+            if(Tuş.tuşlar_dizisi[kazananlar[i][0]].durum == 1 and Tuş.tuşlar_dizisi[kazananlar[i][1]].durum == 1 and Tuş.tuşlar_dizisi[kazananlar[i][2]].durum == 1):
+                durum_bilgisi_değişkeni.set("X KAZANDI")                
+                Tuş.X_skoru += 1
+                x_skor__değişkeni.set("X: " + str(Tuş.X_skoru))                 
+                oyun_ekranı.update()
+                winsound.PlaySound('Queen - We Will Rock You', winsound.SND_FILENAME)   
+                Tuş.oyun_başlat()
+                Tuş.oyun_devam = False
+                break # bir kazanma kombinasyonu varsa döngü kırılıyor            
+
+    @classmethod
+    def O_test_et(cls):
+        # tüm kazandıran olasılıkları bir diziye atadım ve döngü ile bu olasılıkları test ediyorum
+        kazananlar = [[0,3,6] , [1,4,7] , [2,5,8] , [0,1,2] , [3,4,5] , [6,7,8] , [0,4,8] , [2,4,6]]
+        for i in range (0,len(kazananlar)):
+            if(Tuş.tuşlar_dizisi[kazananlar[i][0]].durum == 2 and Tuş.tuşlar_dizisi[kazananlar[i][1]].durum == 2 and Tuş.tuşlar_dizisi[kazananlar[i][2]].durum == 2):                
+                durum_bilgisi_değişkeni.set("O KAZANDI")
+                Tuş.O_skoru += 1
+                o_skor__değişkeni.set("O: " + str(Tuş.O_skoru)) 
+                oyun_ekranı.update()
+                #programın bu bölümünde hayatın anlamını sorguluyoruz !
+                winsound.PlaySound('Azer Bülbül - Başaramadım', winsound.SND_FILENAME)                
+                Tuş.oyun_başlat()
+                Tuş.oyun_devam = False
+                break # bir kazanma kombinasyonu varsa döngü kırılıyor
+      
+#_________________________    ANA PROGRAM BAŞLANGICI    _______________________________               
+
+if __name__ == "__main__":
+    Tuş.oyun_ilk_çalışma = True    
+    oyun_ekranı = Tk()
+
+    #skoru ve oyun durumunu bildiren labellar için değişkenler tanımlanıyor(StringVar)
+    durum_bilgisi_değişkeni = StringVar(oyun_ekranı , "OYUN BAŞLADI !")
+    o_skor__değişkeni = StringVar(oyun_ekranı , "O: 0")
+    x_skor__değişkeni = StringVar(oyun_ekranı , "X: 0")
+
+    #tkinter penceresi olulşturuluyor
+    oyun_ekranı.geometry("300x600+500+10")#oyun ekranının boyutları tanımlanıyor
+    oyun_ekranı.config(bg = "black")# arkaplan rengi
+    oyun_ekranı.resizable(0,0)# eni ve boyu değiştirilemez
+
+    #oyunu  kimin kazandığı bilgisini yazan label
+    durum_yazısı = Label(oyun_ekranı , text = "" , textvariable = durum_bilgisi_değişkeni  , bg = "#6683b3" , font= ("Consolas 20 bold"))
+    durum_yazısı.grid(row = 3 , column = 0 , columnspan =3 , padx = 10 , pady =10)
+
+    #yukarıdaki label ile skor arasında ayraç olması için tanımlanan bir frame
+    #(Ayıraç olarak kullanılıyor içine bir şey yerleştirlmiyor)
+    yatay_ayraç = Frame(oyun_ekranı ,  bg = "black"  )
+    yatay_ayraç.grid(column=0, row=3, rowspan=3, sticky='WE' , columnspan = 3 , padx = 10 , pady =10)
+
+    #O oyuncusunun skorunu gösteren label    
+    o_skor_yazısı = Label(oyun_ekranı , text = "O: 0" , textvariable = o_skor__değişkeni  , bg = "black" , font= ("Consolas 26 bold"), fg="#a84c38")
+    o_skor_yazısı.grid(row = 5, column = 0 , padx = 10 , pady =10)
+
+    #X oyuncusunun skorunu gösteren label
+    x_skor_yazısı = Label(oyun_ekranı , text = "X: 0" , textvariable = x_skor__değişkeni  , bg = "black" , font= ("Consolas 26 bold") , fg="#357dbd")
+    x_skor_yazısı.grid(row = 5 , column = 2, padx = 10 , pady =10)     
+    
+    Tuş.oyun_başlat()
+    oyun_ekranı.mainloop()
